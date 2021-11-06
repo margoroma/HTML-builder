@@ -10,6 +10,9 @@ function copyDirectory() {
                 if (err) {
                     throw err;
                 }
+                else {
+                    fs.rm(pathCopy, {force: true}, (err, files) => {})
+                }
             });
         }
         fs.readdir(pathFolder, (err, files) => {
