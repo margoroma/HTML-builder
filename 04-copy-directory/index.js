@@ -1,26 +1,27 @@
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
-const pathFolder = path.join(__dirname, 'files');
-const pathCopy = path.join(__dirname, 'files-copy');
+const pathFolder = path.join(__dirname, 'files'); 
+const pathCopy = path.join(__dirname, 'files-copy'); 
 
 
-function createDirectory() {
-    fs.stat(pathCopy, (err) => {
-        if (err && err.code === 'ENOENT') {
-            fs.mkdir(pathCopy, (err) => {})
-        } else {
-            fs.rm(pathCopy, {force: true}, (err, files) => {})
-        }
+async function copyFolder(srcFrom, scrTo) {
+    await fs.rm(scrTo, {
+        recursive: true,
+        force: true
     })
+    await fs.mkdir(scrTo, {
+        recursive: true
+    });
+
+    let allData = await fs.readdir(srcFrom, {
+        withFileTypes: true
+    });
+
+    for (let adata of allData) {
+        let srcPath = path.resolve(srcFrom, adata.name);
+        let scrToPath = path.resolve(scrTo, adata.name);
+        adata.isDirectory() ? await copyFolder(srcPath, scrToPath) : await fs.copyFile(srcPath, scrToPath);
+    }
 }
 
-function copyDirectory() {
-    createDirectory()
-    fs.readdir(pathFolder, (err, files) => {
-        files.forEach(file => {
-            fs.copyFile(path.resolve(pathFolder, file), path.resolve(pathCopy, file), (err) => {})
-        })
-    })
-}
-
-copyDirectory()
+copyFolder(pathFolder, pathCopy);
